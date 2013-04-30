@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+ <head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <link rel="icon" href="icon.png" />
+  <title>Sub-Dials</title>
+  <style>
+body{padding:0 20px;font-size:200%;color:#FFF;text-shadow:0 1px 3px #222;background:url('background.png') repeat;}
+a img{border:0;}
+.dial{display:block;float:left;margin:10px 20px;padding:5px 7px 7px 5px;width:320px;height:200px;color:#999;text-decoration:none;text-shadow:none;border:1px solid rgba(0,0,0,0.0);border-radius:9px;transition:0.3s;}
+.dial:hover{background:rgba(0,0,0,0.2);border:1px solid rgba(0,0,0,0.3);box-shadow:0 0 3px rgba(255,255,255,0.5) inset;transition:0.3s;}
+.dial .inner{margin:1px;width:320px;height:200px;overflow:hidden;background:#FFF no-repeat 50% 50%;border-radius:5px;box-shadow:0 0 1px rgba(0,0,0,1),0 1px 2px rgba(0,0,0,0.5);transition:box-shadow 0.1s,border 0.3s,margin 0.3s;}
+.dial:hover .inner{margin:0;border:1px solid #FFF;box-shadow:none;transition:0.2s;}
+.dial h2{text-align:center;}
+#content{margin:6% 5% 0;}
+#speeddial-preview{display:none;}
+@media screen and (view-mode:minimized) {
+	#content{display:none;}
+	#speeddial-preview{display:block;font-size:100%;text-align:center;}
+}
+  </style>
+ </head>
+ <body>
+  <div id="speeddial-preview">
+  </div>
+  <div id="content">
+  </div>
+  <script src="config.js"></script>
+  <script>
+var content = document.getElementById("content"), dial;
+function populateContent() {
+	dial = (location.hash == "") ? "" : decodeURIComponent(document.location.hash.substr(1));
+	if(dial == "" || subdial[dial] === undefined) {
+		dial = "";
+
+		document.getElementById("speeddial-preview").innerHTML = '<h1>Sub-Dials</h1>';
+		content.innerHTML = '<h1>Sub-Dials</h1>';
+
+		// Show list of categories
+		var dialList = Object.keys(subdial);
+		for(var i = 0, len = dialList.length; i < len; i ++) {
+			var a = document.createElement("a");
+			a.className = "dial";
+			a.href = '#' + encodeURIComponent(dialList[i]);
+			a.title = dialList[i];
+			a.setAttribute("onclick", "window.location='" + a.href + "';populateContent()");
+			var d = document.createElement("div");
+			d.className = "inner";
+			var h = document.createElement("h2");
+			h.innerText = dialList[i];
+			d.appendChild(h);
+			a.appendChild(d);
+			content.appendChild(a);
+		}
+	}
+	else {
+		content.innerHTML = "";
+
+		var h = document.createElement("h1");
+		h.innerText = dial;
+		document.getElementById("speeddial-preview").appendChild(h);
+		h = h.cloneNode();
+		content.appendChild(h);
+		document.title = 'Sub-Dial | ' + dial;
+
+		// Show links in current dial
+		for(var i = 0, len = subdial[dial].length; i < len; i ++) {
+			var a = document.createElement("a");
+			a.className = "dial";
+			a.href = subdial[dial][i][0];
+			a.title = subdial[dial][i][((subdial[dial][i][1] === undefined || subdial[dial][i][1] == "") ? 0 : 1)];
+			a.innerHTML = '<div class="inner" style="background-image:url(\''
+				+ ((subdial[dial][i][2] === undefined || subdial[dial][i][2] == "") ? 'http://api.webthumbnail.org?width=320&height=200&url=' + encodeURIComponent(subdial[dial][i][0]) : subdial[dial][i][2])
+				+ '\');"></div>';
+			content.appendChild(a);
+		}
+	}
+}
+populateContent();
+function shortcut(e) {
+	if(e.keyCode >= 48 && e.keyCode < 58) {
+		var key = e.keyCode - 49;
+		if(key == -1)
+			key = 9;
+		var links = content.getElementsByTagName("a");
+		if(key < links.length)
+			window.location = links[key].href;
+		if(dial == "")
+			populateContent();
+	}
+}
+document.onkeypress = shortcut;
+  </script>
+ </body>
+</html>
