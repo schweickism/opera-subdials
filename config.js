@@ -7,9 +7,11 @@ var subdial={
 		['https://addons.opera.com/en/', 'Opera add-ons'],
 		['http://my.opera.com/community/']
 	],
-	'Search Engines':[
+	'Search':[
 		['http://www.google.com/'],
 		['http://www.yahoo.com/'],
-		['http://www.bing.com/']
+		['http://www.bing.com/'],
+		['https://duckduckgo.com/'],
+		['http://www.wikipedia.org/']
 	]
 };

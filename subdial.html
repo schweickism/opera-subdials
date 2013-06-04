@@ -15,8 +15,11 @@ a img{border:0;}
 #content{margin:6% 5% 0;}
 #speeddial-preview{display:none;}
 @media screen and (view-mode:minimized) {
+	html,body{margin:0;padding:0;}
 	#content{display:none;}
-	#speeddial-preview{display:block;font-size:100%;text-align:center;}
+	#speeddial-preview{display:block;height:210px;font-size:100%;text-align:center;}
+	#speeddial-preview h1{position:absolute;top:0;left:0;z-index:2;margin:40px;text-shadow:0 1px 8px rgba(0,0,0,0.8);}
+	#speeddial-preview .thumb{display:block;float:left;margin:0;padding:0;opacity:0.8;}
 }
   </style>
  </head>
@@ -27,14 +30,13 @@ a img{border:0;}
   </div>
   <script src="config.js"></script>
   <script>
-var content = document.getElementById("content"), dial;
+var preview = document.getElementById("speeddial-preview"), content = document.getElementById("content"), dial;
 function populateContent() {
 	dial = (location.hash == "") ? "" : decodeURIComponent(document.location.hash.substr(1));
 	if(dial == "" || subdial[dial] === undefined) {
 		dial = "";
 
-		document.getElementById("speeddial-preview").innerHTML = '<h1>Sub-Dials</h1>';
-		content.innerHTML = '<h1>Sub-Dials</h1>';
+		preview.innerHTML = content.innerHTML = '<h1>Sub-Dials</h1>';
 
 		// Show list of categories
 		var dialList = Object.keys(subdial);
@@ -54,26 +56,40 @@ function populateContent() {
 		}
 	}
 	else {
+		document.title = "Sub-Dial | " + dial;
+
 		content.innerHTML = "";
 
 		var h = document.createElement("h1");
 		h.innerText = dial;
-		document.getElementById("speeddial-preview").appendChild(h);
-		h = h.cloneNode();
 		content.appendChild(h);
-		document.title = 'Sub-Dial | ' + dial;
 
 		// Show links in current dial
-		for(var i = 0, len = subdial[dial].length; i < len; i ++) {
+		var len = subdial[dial].length;
+		var cols = Math.ceil(Math.sqrt(len));
+		var mosaicThumbSize = 100 / cols;
+		for(var i = 0; i < len; i ++) {
 			var a = document.createElement("a");
 			a.className = "dial";
 			a.href = subdial[dial][i][0];
 			a.title = subdial[dial][i][((subdial[dial][i][1] === undefined || subdial[dial][i][1] == "") ? 0 : 1)];
-			a.innerHTML = '<div class="inner" style="background-image:url(\''
-				+ ((subdial[dial][i][2] === undefined || subdial[dial][i][2] == "") ? 'http://api.webthumbnail.org?width=320&height=200&url=' + encodeURIComponent(subdial[dial][i][0]) : subdial[dial][i][2])
-				+ '\');"></div>';
+			var bg = (subdial[dial][i][2] === undefined || subdial[dial][i][2] == "") ? 'http://api.webthumbnail.org?width=320&height=200&url=' + encodeURIComponent(subdial[dial][i][0]) : subdial[dial][i][2];
+			a.innerHTML = '<div class="inner" style="background-image:url(\'' + bg + '\');"></div>';
 			content.appendChild(a);
+
+			// Preview thumbnail background mosaic (on the real speed dial)
+			a = document.createElement("div");
+			a.className = "thumb";
+			a.style = "width:" + mosaicThumbSize + "%;height:" + mosaicThumbSize + "%;background-image:url('" + bg + "');";
+			preview.appendChild(a);
 		}
+
+		// Finish up preview view
+		//repeat mosaic to fill any remaining space (sqrt is ceil'd so we get every bg at least once)
+		preview.innerHTML += preview.innerHTML;
+		//add preview header
+		h = h.cloneNode();
+		preview.appendChild(h);
 	}
 }
 populateContent();
